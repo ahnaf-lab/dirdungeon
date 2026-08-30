@@ -3,9 +3,9 @@
 A terminal roguelike whose dungeon is deterministically generated from a real
 directory tree: folders become rooms, file sizes become monster strength, and
 extensions become monster types. Clearing it is meant to print a loot report
-of what you'd actually find if you refactored — that gameplay loop is a later
-milestone; this one draws the map, the player and a HUD on top of the
-generator underneath it.
+of what you'd actually find if you refactored — that report is a later
+milestone; this one adds the map, the player and a HUD, plus movement between
+rooms and combat that auto-resolves from each monster's file size.
 
 Point it at any directory and it hashes the paths in that tree into a fixed
 set of rooms, corridors and monsters. Run it again, on the same tree, and you
@@ -70,6 +70,35 @@ const dungeon = generateDungeon('./src', { seed: 'my-seed' });
 const player = createPlayer(dungeon); // full health, standing in the entrance
 console.log(renderFrame(dungeon, player));
 ```
+
+### Movement and combat
+
+`src/game.js` turns the static map into a playable state machine:
+
+```js
+import { generateDungeon } from './src/mapgen.js';
+import { createGame, exits, move } from './src/game.js';
+
+const dungeon = generateDungeon('./src');
+const game = createGame(dungeon); // spawns in the entrance, fights anything already there
+
+for (const room of exits(game)) {
+  move(game, room.id); // walk into a directly-connected room
+}
+
+console.log(game.status); // 'playing' | 'won' | 'dead'
+console.log(game.log);    // a line per move and per fight, in order
+```
+
+A corridor is the only legal move — you can walk to a directory's parent or
+its immediate children, nothing further in one step. Walking into a room
+auto-resolves a fight against every monster still alive there: each round
+the player deals a fixed amount of damage and the monster deals damage equal
+to its size-derived danger tier, until one side runs out of hit points. A
+monster's hit points come directly from its file size (bigger files are
+longer fights), so the exact same dungeon and the same sequence of moves
+always plays out identically. The run ends in `'won'` once every monster is
+defeated, or `'dead'` if the player runs out of health first.
 
 Run the test suite with:
 
