@@ -1,0 +1,124 @@
+{
+  "seed": "test-seed",
+  "root": "sample-tree",
+  "rooms": [
+    {
+      "id": "room-14edc40",
+      "path": ".",
+      "name": "entrance hall",
+      "x": 408,
+      "y": 945
+    },
+    {
+      "id": "room-c20e216e",
+      "path": "data",
+      "name": "data",
+      "x": 966,
+      "y": 705
+    },
+    {
+      "id": "room-ab4c1029",
+      "path": "docs",
+      "name": "docs",
+      "x": 809,
+      "y": 888
+    },
+    {
+      "id": "room-57cb7d7d",
+      "path": "docs/nested",
+      "name": "nested",
+      "x": 725,
+      "y": 953
+    },
+    {
+      "id": "room-6eb61ac4",
+      "path": "src",
+      "name": "src",
+      "x": 164,
+      "y": 428
+    }
+  ],
+  "corridors": [
+    {
+      "from": "room-14edc40",
+      "to": "room-c20e216e"
+    },
+    {
+      "from": "room-14edc40",
+      "to": "room-ab4c1029"
+    },
+    {
+      "from": "room-ab4c1029",
+      "to": "room-57cb7d7d"
+    },
+    {
+      "from": "room-14edc40",
+      "to": "room-6eb61ac4"
+    }
+  ],
+  "monsters": [
+    {
+      "id": "monster-323daef0",
+      "path": "data/bigfile.log",
+      "room": "room-c20e216e",
+      "type": "null slime",
+      "size": 1920,
+      "level": 3,
+      "tier": "moderate"
+    },
+    {
+      "id": "monster-81b97e86",
+      "path": "docs/guide.md",
+      "room": "room-ab4c1029",
+      "type": "markdown ghost",
+      "size": 76,
+      "level": 1,
+      "tier": "trivial"
+    },
+    {
+      "id": "monster-8c6ae812",
+      "path": "docs/nested/notes.txt",
+      "room": "room-57cb7d7d",
+      "type": "text sprite",
+      "size": 67,
+      "level": 1,
+      "tier": "trivial"
+    },
+    {
+      "id": "monster-c7ec61cf",
+      "path": "package.json",
+      "room": "room-14edc40",
+      "type": "json golem",
+      "size": 50,
+      "level": 1,
+      "tier": "trivial"
+    },
+    {
+      "id": "monster-841e866d",
+      "path": "README",
+      "room": "room-14edc40",
+      "type": "shadow ooze",
+      "size": 138,
+      "level": 1,
+      "tier": "trivial"
+    },
+    {
+      "id": "monster-15bbc609",
+      "path": "src/index.js",
+      "room": "room-6eb61ac4",
+      "type": "javascript imp",
+      "size": 46,
+      "level": 1,
+      "tier": "trivial"
+    },
+    {
+      "id": "monster-e3d75fca",
+      "path": "src/utils.py",
+      "room": "room-6eb61ac4",
+      "type": "python serpent",
+      "size": 32,
+      "level": 1,
+      "tier": "trivial"
+    }
+  ]
+}

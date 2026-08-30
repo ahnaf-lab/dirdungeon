@@ -1,0 +1,2 @@
+Sample fixture tree used by golden-file tests. Do not edit lightly:
+changing any file here changes the byte sizes the tests hash against.
