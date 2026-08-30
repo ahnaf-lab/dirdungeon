@@ -4,7 +4,8 @@ A terminal roguelike whose dungeon is deterministically generated from a real
 directory tree: folders become rooms, file sizes become monster strength, and
 extensions become monster types. Clearing it is meant to print a loot report
 of what you'd actually find if you refactored — that gameplay loop is a later
-milestone; this one is the map generator underneath it.
+milestone; this one draws the map, the player and a HUD on top of the
+generator underneath it.
 
 Point it at any directory and it hashes the paths in that tree into a fixed
 set of rooms, corridors and monsters. Run it again, on the same tree, and you
@@ -21,7 +22,7 @@ npm install
 
 ## Usage
 
-Generate a dungeon from any directory and print it as JSON:
+Render a directory as an ANSI dungeon map:
 
 ```
 node bin/dirdungeon.js <directory> [seed]
@@ -37,7 +38,20 @@ The `seed` argument is optional (it defaults to `"dirdungeon"`); pass a
 different seed to get a different-looking dungeon from the same tree without
 changing any files.
 
-Output is a JSON object:
+The rendered frame is a fixed-size character grid: `E` is the entrance room,
+`#` is any other room, `m` is a room containing at least one monster
+(colored by its strongest occupant's danger tier: green/cyan/yellow/magenta/
+red for trivial through brutal), `·` is a corridor, and `@` is the player,
+who starts at full health in the entrance room. A two-line HUD underneath
+shows HP, seed, current room and remaining monster count.
+
+Pass `--json` to get the underlying dungeon data instead of a rendered frame:
+
+```
+node bin/dirdungeon.js src --json
+```
+
+That JSON object has:
 
 - `rooms` — one per directory, each with a stable `id` and an `(x, y)`
   position derived from a hash of its path.
@@ -50,8 +64,11 @@ You can also use it as a library:
 
 ```js
 import { generateDungeon } from './src/mapgen.js';
+import { renderFrame, createPlayer } from './src/render.js';
 
 const dungeon = generateDungeon('./src', { seed: 'my-seed' });
+const player = createPlayer(dungeon); // full health, standing in the entrance
+console.log(renderFrame(dungeon, player));
 ```
 
 Run the test suite with:
