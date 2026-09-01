@@ -1,0 +1,56 @@
+{
+  "largestFiles": [
+    {
+      "path": "data/bigfile.log",
+      "size": 1920,
+      "type": "null slime"
+    },
+    {
+      "path": "README",
+      "size": 138,
+      "type": "shadow ooze"
+    },
+    {
+      "path": "docs/guide.md",
+      "size": 76,
+      "type": "markdown ghost"
+    },
+    {
+      "path": "docs/nested/notes.txt",
+      "size": 67,
+      "type": "text sprite"
+    },
+    {
+      "path": "package.json",
+      "size": 50,
+      "type": "json golem"
+    }
+  ],
+  "oldestFiles": [
+    {
+      "path": "docs/nested/notes.txt",
+      "mtime": "2018-07-04T00:00:00.000Z",
+      "type": "text sprite"
+    },
+    {
+      "path": "src/utils.py",
+      "mtime": "2019-03-15T00:00:00.000Z",
+      "type": "python serpent"
+    },
+    {
+      "path": "README",
+      "mtime": "2020-01-01T00:00:00.000Z",
+      "type": "shadow ooze"
+    },
+    {
+      "path": "package.json",
+      "mtime": "2021-01-01T00:00:00.000Z",
+      "type": "json golem"
+    },
+    {
+      "path": "src/index.js",
+      "mtime": "2022-06-01T00:00:00.000Z",
+      "type": "javascript imp"
+    }
+  ]
+}

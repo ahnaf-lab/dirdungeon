@@ -9,6 +9,7 @@
 // order, with the same result.
 
 import { createPlayer } from './render.js';
+import { buildTreasureReport, formatTreasureReport } from './loot.js';
 
 // Fixed damage the player deals per round. Monsters have no player-facing
 // "attack" stat to balance against, so this is the one constant tuned by
@@ -80,6 +81,15 @@ function fightMonstersInRoom(game, room) {
   if (game.status === 'playing' && game.defeated.size === game.dungeon.monsters.length) {
     game.status = 'won';
     game.log.push('The dungeon is cleared.');
+    // The treasure report needs real filesystem stats (file size is already
+    // known from the dungeon, but "oldest" needs a fresh mtime read), so it
+    // only runs when the caller supplied the real directory the dungeon was
+    // generated from. Without it, `game.loot` just stays null — the map and
+    // combat remain fully playable either way.
+    if (game.rootDir) {
+      game.loot = buildTreasureReport(game.dungeon, game.rootDir);
+      game.log.push(formatTreasureReport(game.loot));
+    }
   }
 }
 
@@ -89,23 +99,30 @@ function fightMonstersInRoom(game, room) {
  * walked in — there is no free pass for monsters placed at the root.
  *
  * @param {object} dungeon - output of `generateDungeon`.
+ * @param {{ rootDir?: string }} [options] - `rootDir` is the real directory
+ *   the dungeon was generated from. It is optional and only used to build
+ *   the treasure report (`game.loot`) once the dungeon is cleared; omitting
+ *   it still produces a fully playable game, just without loot.
  * @returns {{
  *   dungeon: object,
  *   player: {hp: number, maxHp: number, roomId: string},
  *   defeated: Set<string>,
  *   log: string[],
  *   status: 'playing' | 'won' | 'dead',
+ *   loot: null | { largestFiles: object[], oldestFiles: object[] },
  * }}
  */
-export function createGame(dungeon) {
+export function createGame(dungeon, options = {}) {
   const player = createPlayer(dungeon);
   const game = {
     dungeon,
     player,
+    rootDir: options.rootDir,
     adjacency: buildAdjacency(dungeon),
     defeated: new Set(),
     log: [],
     status: 'playing',
+    loot: null,
   };
 
   const startRoom = dungeon.rooms.find((room) => room.id === player.roomId);
@@ -146,5 +163,42 @@ export function move(game, targetRoomId) {
   const room = game.dungeon.rooms.find((r) => r.id === targetRoomId);
   game.log.push(`You move into ${room.name}.`);
   fightMonstersInRoom(game, room);
+  return game;
+}
+
+// Depth-first: walk into every unvisited room reachable from `roomId`,
+// then step back to `roomId` before trying the next one. Corridors form a
+// tree (each directory has exactly one parent), so backing out after each
+// subtree is what makes the rest of the tree reachable again through
+// `move`, which only ever allows a step to a directly adjacent room.
+function visitAll(game, roomId, visited) {
+  visited.add(roomId);
+  for (const room of exits(game)) {
+    if (visited.has(room.id) || game.status !== 'playing') continue;
+    move(game, room.id);
+    if (game.status !== 'playing') return;
+    visitAll(game, room.id, visited);
+    if (game.status !== 'playing') return;
+    move(game, roomId);
+  }
+}
+
+/**
+ * Play out a full, deterministic clear of the dungeon: starting from the
+ * entrance, depth-first visit every room reachable by corridor, fighting
+ * whatever is there, until every monster is defeated (or the player falls).
+ * There is no branching decision to make — the map is a tree and the
+ * outcome of every fight is pure arithmetic — so "play the whole dungeon"
+ * has exactly one deterministic result for a given dungeon and rootDir.
+ *
+ * @param {object} dungeon - output of `generateDungeon`.
+ * @param {{ rootDir?: string }} [options] - see `createGame`.
+ * @returns {ReturnType<typeof createGame>}
+ */
+export function autoClear(dungeon, options = {}) {
+  const game = createGame(dungeon, options);
+  if (game.status === 'playing') {
+    visitAll(game, game.player.roomId, new Set());
+  }
   return game;
 }
