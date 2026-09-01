@@ -25,8 +25,10 @@ npm install
 Render a directory as an ANSI dungeon map:
 
 ```
-node bin/dirdungeon.js <directory> [seed]
+dirdungeon <directory> [--seed <seed>] [--depth <n>] [--json] [--clear]
 ```
+
+(Or, without installing it as a binary: `node bin/dirdungeon.js <directory> ...`.)
 
 For example, to turn this repository's own source tree into a dungeon:
 
@@ -34,9 +36,13 @@ For example, to turn this repository's own source tree into a dungeon:
 node bin/dirdungeon.js src
 ```
 
-The `seed` argument is optional (it defaults to `"dirdungeon"`); pass a
-different seed to get a different-looking dungeon from the same tree without
-changing any files.
+`--seed` is optional (it defaults to `"dirdungeon"`); pass a different seed to
+get a different-looking dungeon from the same tree without changing any files.
+
+`--depth` caps how many levels of subdirectory are descended into — the root
+directory is depth `0`, so `--depth 0` maps only the root's own files,
+`--depth 1` also includes its immediate subdirectories, and so on. Omit it to
+walk the entire tree.
 
 The rendered frame is a fixed-size character grid: `E` is the entrance room,
 `#` is any other room, `m` is a room containing at least one monster
@@ -133,7 +139,7 @@ arithmetic) and prints the run log, ending with the treasure report if the
 player survives to clear it:
 
 ```
-node bin/dirdungeon.js <directory> [seed] --clear
+node bin/dirdungeon.js <directory> [--seed <seed>] --clear
 ```
 
 Run the test suite with:

@@ -72,7 +72,16 @@ function strengthForSize(size) {
 // makes the whole generator deterministic: fs.readdirSync order is not
 // guaranteed to be stable across platforms, so we impose our own order
 // instead of relying on it.
-function walk(absDir, relDir, entries) {
+//
+// `depth` is the nesting level of `absDir` itself (root is 0). `maxDepth`
+// mirrors the familiar `find -maxdepth` meaning: a directory is only
+// descended into while `depth < maxDepth`, so `maxDepth: 0` yields just the
+// root room and its direct files, `maxDepth: 1` also includes the root's
+// immediate subdirectories (and their files) but nothing deeper, and so on.
+// Files are never excluded by depth on their own — only the recursion into
+// deeper *directories* is cut off, so the deepest room still visited shows
+// all of its own files.
+function walk(absDir, relDir, entries, depth, maxDepth) {
   const items = fs
     .readdirSync(absDir, { withFileTypes: true })
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -82,8 +91,9 @@ function walk(absDir, relDir, entries) {
     const absPath = path.join(absDir, item.name);
 
     if (item.isDirectory()) {
+      if (maxDepth !== undefined && depth >= maxDepth) continue;
       entries.dirs.push(relPath);
-      walk(absPath, relPath, entries);
+      walk(absPath, relPath, entries, depth + 1, maxDepth);
     } else if (item.isFile()) {
       entries.files.push(relPath);
     }
@@ -106,10 +116,17 @@ function parentOf(relPath) {
  * regardless of machine, absolute path, or run order.
  *
  * @param {string} rootDir - path to the directory to turn into a dungeon.
- * @param {{ seed?: string }} [options]
+ * @param {{ seed?: string, depth?: number }} [options] - `depth` caps how
+ *   many levels of subdirectory are descended into (root is depth 0, so
+ *   `depth: 0` means only the root room's own files are included);
+ *   omitting it walks the entire tree.
  */
 export function generateDungeon(rootDir, options = {}) {
   const seed = options.seed ?? 'dirdungeon';
+  const maxDepth = options.depth;
+  if (maxDepth !== undefined && (!Number.isInteger(maxDepth) || maxDepth < 0)) {
+    throw new Error(`depth must be a non-negative integer, got: ${maxDepth}`);
+  }
   const absRoot = path.resolve(rootDir);
 
   const rootStat = fs.statSync(absRoot);
@@ -118,7 +135,7 @@ export function generateDungeon(rootDir, options = {}) {
   }
 
   const entries = { dirs: ['.'], files: [] };
-  walk(absRoot, '.', entries);
+  walk(absRoot, '.', entries, 0, maxDepth);
 
   const roomIdByPath = new Map();
   const rooms = entries.dirs.map((relPath) => {
